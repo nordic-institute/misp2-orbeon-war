@@ -1,0 +1,59 @@
+<project name="orbeon-misp2" basedir="." default="main">
+
+    <property name="version"        value="20130213" />
+    <property name="build.dir"      value="build"/>
+    <property name="webapp.dir"     value="${build.dir}/${ant.project.name}"/>
+    <property name="web.dir"        value="web"/>
+    <property name="src.dir"        value="src"/>
+    <property name="lib.dir"        value="lib"/>
+    <property name="js.dir"         value="ops/javascript"/>
+    <property name="classes.dir"    value="${webapp.dir}/WEB-INF/classes"/>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="orbeon-unpack" depends="clean">
+        <unzip src="orbeon-4.9.0.201505052329-CE.zip" dest="${build.dir}">
+            <mapper type="flatten"/>
+            <patternset>
+                <include name="**/orbeon.war"/>
+            </patternset>
+        </unzip>
+        <unwar src="${build.dir}/orbeon.war" dest="${webapp.dir}">
+            <patternset>
+                <include name="WEB-INF/*.jar"/>
+                <include name="WEB-INF/*.xml"/>
+                <include name="WEB-INF/classes/*"/>
+                <include name="WEB-INF/exist-data/README.txt"/>
+                <include name="WEB-INF/lib/*"/>
+                <include name="WEB-INF/resources/*"/>
+                <include name="xforms-jsp"/>
+                <exclude name="xforms-jsp/*"/>
+            </patternset>
+        </unwar>
+		<delete file="${build.dir}/orbeon.war"/>
+    </target>
+
+    <target name="orbeon-copy-custom-files" depends="orbeon-unpack">
+       <copy todir="${webapp.dir}/WEB-INF/resources/Charts" verbose="true" overwrite="true"><fileset dir="custom/Charts"/></copy>
+       <copy todir="${webapp.dir}/WEB-INF/resources/config" verbose="true" overwrite="true"><fileset dir="custom/config"/></copy>
+       <copy todir="${webapp.dir}/WEB-INF/resources/ops" verbose="true" overwrite="true"><fileset dir="custom/ops"/></copy>
+       <copy todir="${webapp.dir}/WEB-INF/resources/xbl" verbose="true" overwrite="true"><fileset dir="custom/xbl"/></copy>
+    
+       <copy todir="${webapp.dir}/WEB-INF/resources" verbose="true" overwrite="true">
+    	  <fileset dir="custom" includes="*" />
+       </copy>
+    </target>
+
+    <target name="main" depends="clean,orbeon-unpack"/>
+    <target name="war" depends="orbeon-copy-custom-files">
+		<delete file="${build-directory}/${war-file-name}" />
+
+		<war warfile="${build.dir}/orbeon-misp2.war" webxml="${webapp.dir}/WEB-INF/web.xml" whenmanifestonly="skip">
+			<fileset dir="${webapp.dir}">
+			</fileset>
+		</war>
+
+    </target>
+</project>
